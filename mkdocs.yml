@@ -1,0 +1,28 @@
+site_name: Compilador Python -> Ruby
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+nav:
+  - Home: index.md
+
+  - Sprint 1:
+      - Introdução: sprint1/index.md
+      - Análise Léxica: sprint1/analise_lexica.md
+      - Análise Sintática: sprint1/analise_sintatica.md
