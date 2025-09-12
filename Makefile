@@ -18,7 +18,7 @@ FLEX_FLAGS  =      # deixe vazio ou acrescente opções se necessário
 
 # Parâmetros de compilação
 CC = gcc
-CFLAGS = 
+CFLAGS = -Wall
 LDFLAGS = -lfl     # biblioteca do Flex
 
 # Regra padrão (alvo "all" vai gerar o executável)
