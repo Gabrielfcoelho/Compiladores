@@ -1,6 +1,6 @@
 # Guia de Contribuição
 
-Agradecemos o seu interesse em contribuir com o projeto\! Para manter a organização, a clareza do histórico e a qualidade do código, pedimos que siga as regras descritas abaixo.
+Agradecemos o seu interesse em contribuir com o projeto! Para manter a organização, a clareza do histórico e a qualidade do código, pedimos que siga as regras descritas abaixo.
 
 ## Regra de Ouro: Comece com uma Issue
 
