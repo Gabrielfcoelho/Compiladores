@@ -28,7 +28,7 @@ all: $(EXEC)
 $(EXEC): $(BISON_C) $(FLEX_C)
 	$(CC) $(CFLAGS) -o $@ $(BISON_C) $(FLEX_C) $(LDFLAGS)
 
-# Regra para rodar o Bison: gera exemplo.tab.c e exemplo.tab.h
+# Regra para rodar o Bison: gera parser.tab.c e parser.tab.h
 $(BISON_C) $(BISON_H): $(BISON_FILE)
 	bison $(BISON_FLAGS) $(BISON_FILE)
 
