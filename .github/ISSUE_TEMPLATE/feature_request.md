@@ -30,4 +30,4 @@ Adicione qualquer outro contexto ou screenshots sobre a solicitação aqui.
 
 ## Responsáveis
 
-Adicone as pessoas responsáveis.
+Adicione as pessoas responsáveis.
