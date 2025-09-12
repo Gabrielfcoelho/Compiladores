@@ -1,9 +1,3 @@
-Entendido. Você quer um guia de contribuição (`CONTRIBUTING.md`) que estabeleça regras claras sobre o fluxo de trabalho, o padrão de nomenclatura para branches e commits, o processo de revisão e que incorpore a lista de "termos" do Conventional Commits que você forneceu.
-
-Aqui está a proposta para o seu `CONTRIBUTING.md`, já com todas essas regras integradas.
-
------
-
 # Guia de Contribuição
 
 Agradecemos o seu interesse em contribuir com o projeto\! Para manter a organização, a clareza do histórico e a qualidade do código, pedimos que siga as regras descritas abaixo.
