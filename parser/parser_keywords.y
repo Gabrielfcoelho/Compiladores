@@ -18,6 +18,8 @@ programa:
 
 declaracao_composta:
     decl_if
+  | decl_else
+  | decl_elif  
   | decl_while
   | funcao
   | declaracao_simples
