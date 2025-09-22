@@ -1,5 +1,5 @@
 %{
-#include "parser_error  .tab.h"
+#include "parser2.tab.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,7 +10,8 @@
 static int pending[PENDING_MAX];
 static int pending_top = 0;
 
-/* pilha de níveis de indentação (em número de espaços); índice 0 = 0 */
+/* pilha de níveis de indentação (em número de espaços); */
+/* índice 0 = 0 */
 #define INDENT_MAX 256
 static int indent_stack[INDENT_MAX];
 static int indent_top = 0;
@@ -47,21 +48,22 @@ static void inicializa_indent(void) {
     indent_stack[0] = 0;
     pending_top = 0;
 }
+
+#undef YY_DECL
+#define YY_DECL int scanner_principal(void)
 %}
 
 %option yylineno
-%option prefix="sc"
 %option noyywrap
 
 %%
 
-/* quebras de linha: não retornam imediatamente token; apenas colocam flag inicio_linha.
-   As quebras reais (NEW_LINE) serão geradas quando encontrarmos a próxima linha
-   não vazia/comentário, junto com INDENT/DEDENT se necessário. */
-(\r\n|\r|\n)+   { inicio_linha = 1; /* Atualiza o contador de linha yylineno */}
+(\r\n|\r|\n)+   {
+                    inicio_linha = 1;
+                    /* Atualiza o contador de linha yylineno */
+                }
 
-/* espaços no inicio de linha (indentação)
-^[ \t]+              { 
+^[ \t]+              {
                         if (!inicio_linha) { /* espaços no meio da linha são ignorados */
                             BEGIN(INITIAL);
                             continue;
@@ -72,44 +74,41 @@ static void inicializa_indent(void) {
 
                         if (ind > prev) { /* aumento de indent: empilha novo nível e emite INDENTACAO */
                             indent_stack[indent_top++] = ind;
-                            empilha_token(NEW_LINE); /* antes do INDENTACAO emitir NEW_LINE (fim lógico da linha anterior) */
-                            empilha_token(INDENT); 
+                            empilha_token(NEWLINE); /* antes do INDENTACAO emitir NEWLINE (fim lógico da linha anterior) */
+                            empilha_token(INDENT);
                         }
                         else if (ind < prev) { /* redução: emitir NOVA_LINHA + N * DESINDENT */
-                            empilha_token(NEW_LINE);
-                            while (ind < indent_stack[indent_top-1]) { /* Evita desempilhar ate vazio
+                            empilha_token(NEWLINE);
+                            while (ind < indent_stack[indent_top-1]) {
                                 if (indent_top <= 1) {
-                                    // Nível de indentação menor que o nível 0
                                     fprintf(stderr, "Erro: desindentação inválida na linha %d\n", yylineno);
                                     exit(1);
                                 }
                                 indent_top--;
-                                empilha_token(DEDENT)
+                                empilha_token(DEDENT);
                             }
-                        /* se o nível não coincide, é erro de indentação real em Python; aqui apenas avisa */
+                            /* se o nível não coincide, é erro de indentação real em Python; */
+                            /* aqui apenas avisa */
                             if (indent_stack[indent_top-1] != ind) {
                                 fprintf(stderr, "Aviso: nível de indentação inconsistente na linha %d\n", yylineno);
                                 exit(1);
                             }
                         } else {
                             /* mesma indentação: emitir NOVA_LINHA apenas */
-                            empilha_token(NOVA_LINHA);
+                            empilha_token(NEWLINE);
                         }
                         inicio_linha = 0;
-                        
                         /* devolver o token pendente mais recente (fila LIFO) */
                         int t = desempilha_token();
                         if (t) return t;
                     }
 
-/* se no início de linha e a linha começa com comentário (#), ignorar toda linha */
-^[ \t]*\#[^\r\n]*   {
+^[ \t]*\#[^\r\n]* {
                         /* permanece inicio_linha = 1 para que próximas quebras/linhas vazias sejam ignoradas */
                         /* consumir comentário e não retornar nada */
                         inicio_linha = 1;
                     }
 
-/* Tokens Básicos */
 [0-9]+          { yylval.ival = atoi(yytext); inicio_linha= 0; return NUM; }
 "+"             { inicio_linha=0; return PLUS; }
 "-"             { inicio_linha=0; return MINUS; }
@@ -120,17 +119,13 @@ static void inicializa_indent(void) {
 
 [ \t]+          { /* consumir espaços no meio da linha */ }
 
-/* caractere inválido: aviso e consumir */
-.               { fprintf(stderr, "Aviso lexical: caractere inválido '%s' na linha %d\n", yytext, yylineno); inicio_linha = 0; }
-
-/* Fim de arquivo: emitir DEDENT pendentes e NEW_LINE final */
 <<EOF>>         {
                     /* so tiver INDENT abertas, fechar com DEDENT */
                     if (indent_top > 1) {
-                        empilha_token(NEW_LINE);
+                        empilha_token(NEWLINE);
                         while (indent_top > 1) {
                             indent_top--;
-                            empilha_token(DEDENT)
+                            empilha_token(DEDENT);
                         }
                     }
                     /* se houver tokens pendentes, retornar um por vez através do wrapper yylex */
@@ -146,11 +141,8 @@ int sclex(void); /* protótipo da função gerada por flex com prefix "sc" */
 int yylex(void) {
     int t = desempilha_token();
     if (t) return t;
-    return sclex();
+    return scanner_principal();
 }
-
-/* inicialização: empilha nível 0 */
-int yywrap(void) { return 1; }
 
 /* bloco final: inicializa a pilha em runtime */
 __attribute__((constructor))
