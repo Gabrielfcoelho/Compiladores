@@ -52,13 +52,13 @@ extern char *yytext; // Para reportar o texto do token no erro
 // A regra 'programa' é o ponto de entrada. Um programa é uma sequência de declarações.
 programa:
     /* um programa pode começar vazio */
-  | programa declaracao NEWLINE
+  | programa declaracao
   ;
 
 // 'declaracao' pode ser uma declaração simples ou composta.
 declaracao:
-    declaracao_simples
-  | declaracao_composta
+    declaracao_simples NEWLINE
+  | declaracao_composta 
   ;
 
 // Declarações compostas são aquelas que contêm outras declarações (ex: if, while).
@@ -82,8 +82,8 @@ bloco:
 
 // Um bloco contém uma ou mais declarações.
 declaracoes:
-    declaracao NEWLINE
-  | declaracoes declaracao NEWLINE
+    declaracao
+  | declaracoes declaracao
   ;
 
 // Regras para declarações específicas

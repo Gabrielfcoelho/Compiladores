@@ -58,12 +58,18 @@ static void inicializa_indent(void) {
 
 %%
 
+^[ \t]+(\r\n|\r|\n)+ {
+                        /* Esta regra captura linhas que contêm APENAS espaços/tabs */
+                        /* e as ignora, tratando-as como uma linha em branco. */
+                        inicio_linha = 1;
+                    }
+
 (\r\n|\r|\n)+   {
                     inicio_linha = 1;
                     /* Atualiza o contador de linha yylineno */
                 }
 
-^[ \t]+              {
+^[ \t]*              {
                         if (!inicio_linha) { /* espaços no meio da linha são ignorados */
                             BEGIN(INITIAL);
                             continue;
@@ -74,11 +80,10 @@ static void inicializa_indent(void) {
 
                         if (ind > prev) { /* aumento de indent: empilha novo nível e emite INDENTACAO */
                             indent_stack[indent_top++] = ind;
-                            empilha_token(NEWLINE); /* antes do INDENTACAO emitir NEWLINE (fim lógico da linha anterior) */
                             empilha_token(INDENT);
-                        }
-                        else if (ind < prev) { /* redução: emitir NOVA_LINHA + N * DESINDENT */
                             empilha_token(NEWLINE);
+                        }
+                        else if (ind < prev) { /* redução: emitir N * DESINDENT + NOVA_LINHA */
                             while (ind < indent_stack[indent_top-1]) {
                                 if (indent_top <= 1) {
                                     fprintf(stderr, "Erro: desindentação inválida na linha %d\n", yylineno);
@@ -87,13 +92,16 @@ static void inicializa_indent(void) {
                                 indent_top--;
                                 empilha_token(DEDENT);
                             }
+                            empilha_token(NEWLINE); /* Empilha por último, para sair primeiro */
+                            
                             /* se o nível não coincide, é erro de indentação real em Python; */
                             /* aqui apenas avisa */
                             if (indent_stack[indent_top-1] != ind) {
                                 fprintf(stderr, "Aviso: nível de indentação inconsistente na linha %d\n", yylineno);
                                 exit(1);
                             }
-                        } else {
+                        }
+                        else {
                             /* mesma indentação: emitir NOVA_LINHA apenas */
                             empilha_token(NEWLINE);
                         }
@@ -117,16 +125,23 @@ static void inicializa_indent(void) {
 "("             { inicio_linha=0; return LPAREN; }
 ")"             { inicio_linha=0; return RPAREN; }
 
+"if"            { inicio_linha=0; return IF; }
+"while"         { inicio_linha=0; return WHL; }
+"return"        { inicio_linha=0; return RTRN; }
+":"             { inicio_linha=0; return COLON; }
+"def"           { inicio_linha=0; return DEF; }
+"break"         { inicio_linha=0; return BRK; }
+
 [ \t]+          { /* consumir espaços no meio da linha */ }
 
 <<EOF>>         {
                     /* so tiver INDENT abertas, fechar com DEDENT */
                     if (indent_top > 1) {
-                        empilha_token(NEWLINE);
                         while (indent_top > 1) {
                             indent_top--;
                             empilha_token(DEDENT);
                         }
+                        empilha_token(NEWLINE); 
                     }
                     /* se houver tokens pendentes, retornar um por vez através do wrapper yylex */
                     inicio_linha = 0;
