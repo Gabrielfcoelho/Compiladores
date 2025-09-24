@@ -64,7 +64,6 @@ decl_brk: BRK {printf("recebi um break\n");}
 decl_fls: FLS {printf("recebi um False\n");}
 decl_true: TRUE {printf("recebi um True\n");}
 decl_none: NONE {printf("recebi um None\n");}
-
 %%
 
 void yyerror(const char *s) {

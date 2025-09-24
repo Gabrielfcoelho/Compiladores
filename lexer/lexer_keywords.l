@@ -29,5 +29,4 @@
 ")"             { return RPAREN; }
 [ \t\n]+        { /* Ignorar espaços em branco */ }
 .               { printf("Caractere inválido: %s\n", yytext); }
-
 %%
