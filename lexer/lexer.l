@@ -58,7 +58,6 @@ static void inicializa_indent(void) {
 
 %%
 
-/* Tratamento de indentação e quebras de linha */
 ^[ \t]+(\r\n|\r|\n)+ {
                         /* Esta regra captura linhas que contêm APENAS espaços/tabs */
                         /* e as ignora, tratando-as como uma linha em branco. */
@@ -112,14 +111,12 @@ static void inicializa_indent(void) {
                         if (t) return t;
                     }
 
-/* Comentários */
 ^[ \t]*\#[^\r\n]* {
                         /* permanece inicio_linha = 1 para que próximas quebras/linhas vazias sejam ignoradas */
                         /* consumir comentário e não retornar nada */
                         inicio_linha = 1;
                     }
 
-/* Keywords do Python */
 "def"           { inicio_linha = 0; return DEF; }
 "return"        { inicio_linha = 0; return RTRN; }
 "if"            { inicio_linha = 0; return IF; }
@@ -135,10 +132,8 @@ static void inicializa_indent(void) {
 "or"            { inicio_linha = 0; return OR; }
 "not"           { inicio_linha = 0; return NOT; }
 
-/* Identificadores */
 [_a-zA-Z][_0-9a-zA-Z]* { inicio_linha = 0; return NAME; }
 
-/* Literais */
 (\".*?\")|(\'.*?\')                       {   
                                             size_t len = strlen(yytext);
                                             char *str = (char*)malloc(len - 1);
@@ -151,14 +146,11 @@ static void inicializa_indent(void) {
 [+-]?(0\.[0-9]*|[1-9][0-9]*\.[0-9]*)    { yylval.floatValue = atof(yytext); inicio_linha = 0; return FLOAT; }
 [+-]?(0+|[1-9][0-9]*)                   { yylval.intValue = atoi(yytext); inicio_linha = 0; return INT; }
 
-
-/* Operadores aritméticos */
 "+"             { inicio_linha = 0; return PLUS; }
 "-"             { inicio_linha = 0; return MINUS; }
 "*"             { inicio_linha = 0; return TIMES; }
 "/"             { inicio_linha = 0; return DIVIDE; }
 
-/* Delimitadores */
 "("             { inicio_linha = 0; return LPAREN; }
 ")"             { inicio_linha = 0; return RPAREN; }
 "{"             { inicio_linha = 0; return LCBRACKET; }
@@ -168,10 +160,8 @@ static void inicializa_indent(void) {
 ":"             { inicio_linha = 0; return COLON; }
 ","             { inicio_linha = 0; return COMA; }
 
-/* Espaços em branco no meio da linha */
 [ \t]+          { /* consumir espaços no meio da linha */ }
 
-/* EOF - Finalizar indentações pendentes */
 <<EOF>>         {
                     /* se tiver INDENT abertas, fechar com DEDENT */
                     if (indent_top > 1) {
@@ -186,19 +176,16 @@ static void inicializa_indent(void) {
                     return 0;
                 }
 
-/* Caracteres inválidos */
 .               { printf("Caractere inválido: %s\n", yytext); }
 
 %%
 
-/* wrapper: devolve tokens pendentes antes de chamar o scanner gerado */
 int yylex(void) {
     int t = desempilha_token();
     if (t) return t;
     return scanner_principal();
 }
 
-/* bloco final: inicializa a pilha em runtime */
 __attribute__((constructor))
 static void inicializa_indent_construtor(void) {
     inicializa_indent();

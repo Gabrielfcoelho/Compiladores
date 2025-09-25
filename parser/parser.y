@@ -109,7 +109,8 @@ decl_while:
   | WHL { printf("recebi um while\n"); }
 
 funcao: 
-    DEF COLON bloco { printf(">> Gramática: Reconheci uma função DEF com bloco.\n"); }
+    DEF NAME LPAREN expressao RPAREN COLON bloco { printf(">> Gramática: Reconheci uma função DEF com bloco.\n"); }
+  | DEF NAME LPAREN RPAREN COLON bloco { printf(">> Gramática: Reconheci uma função sem parametros.\n"); }
   | DEF { printf("recebi um def\n"); }
 
 decl_else: ELSE { printf("recebi um else\n"); }
@@ -143,10 +144,10 @@ expressao:
         }
     }
   | LPAREN expressao RPAREN     { $$ = $2; }
-  | LCBRACKET expressao RCBRACKET
-  | LSBRACKET expressao RSBRACKET
-  | COMA expressao
-  | COLON
+  | LCBRACKET expressao RCBRACKET { $$ = $2; }
+  | LSBRACKET expressao RSBRACKET { $$ = $2; }
+  | COMA expressao              { $$ = $2; }
+  | COLON                       { $$ = 0;}
   | expressao STR               { printf("String lida: %s\n", $2); } 
   | expressao FLOAT             { printf("FLOAT lido: %f\n", $2); }
   | expressao INT               { printf("Inteiro lido: %d\n", $2); }
