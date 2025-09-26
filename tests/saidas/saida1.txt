@@ -1,0 +1,11 @@
+TOKEN: def, lex: 'def'
+TOKEN: LPAREN, lex: '('
+TOKEN: RPAREN, lex: ')'
+TOKEN: COLON, lex: ':'
+TOKEN: NEWLINE
+TOKEN: INDENT (empilhado)
+TOKEN: return, lex: 'return'
+TOKEN: INT, lex: '1'
+TOKEN: EOF, lex: ''
+TOKEN: DEDENT (empilhado)
+TOKEN: NEWLINE (empilhado no EOF)

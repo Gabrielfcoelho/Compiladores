@@ -17,3 +17,4 @@ lex.yy.*
 *.tmp
 *.swp
 *~
+__pycache__
