@@ -25,8 +25,8 @@ static void push_token(int tok) {
         exit(1);
     }
     switch(tok) {
-        case INDENT: printf("TOKEN: INDENT (empilhado)\n"); break;
-        case DEDENT: printf("TOKEN: DEDENT (empilhado)\n"); break;
+        case INDENT: fprintf(stderr,"TOKEN: INDENT (empilhado)\n"); break;
+        case DEDENT: fprintf(stderr,"TOKEN: DEDENT (empilhado)\n"); break;
     }
     pending_tokens[pending_top++] = tok;
 }
@@ -60,7 +60,7 @@ static int count_indent(const char *s) {
         return pending;
     }
 %}
-(\r\n|\n|\r)+            { printf("TOKEN: NEWLINE\n"); BEGIN(INDENT_CHECK); return NEWLINE; }
+(\r\n|\n|\r)+            { fprintf(stderr,"TOKEN: NEWLINE\n"); BEGIN(INDENT_CHECK); return NEWLINE; }
 
 <INDENT_CHECK>[ \t]* {
     if (yytext[yyleng-1] == '\n' || *yytext == '#') {
@@ -106,20 +106,20 @@ static int count_indent(const char *s) {
 ^[ \t]*#.*\n    |
 ^[ \t]*\n       { /* Ignora comentários e linhas em branco */ }
 
-"def"           { printf("TOKEN: def, lex: '%s'\n", yytext); return DEF; }
-"return"        { printf("TOKEN: return, lex: '%s'\n", yytext); return RTRN; }
-"if"            { printf("TOKEN: if, lex: '%s'\n", yytext); return IF; }
-"elif"          { printf("TOKEN: elif, lex: '%s'\n", yytext); return ELIF; }
-"else"          { printf("TOKEN: else, lex: '%s'\n", yytext); return ELSE; }
-"while"         { printf("TOKEN: while, lex: '%s'\n", yytext); return WHL; }
-"break"         { printf("TOKEN: break, lex: '%s'\n", yytext); return BRK; }
-"False"         { printf("TOKEN: False, lex: '%s'\n", yytext); return FLS; }
-"True"          { printf("TOKEN: True, lex: '%s'\n", yytext); return TRUE; }
-"None"          { printf("TOKEN: None, lex: '%s'\n", yytext); return NONE; }
-"is"            { printf("TOKEN: is, lex: '%s'\n", yytext); return IS; }
-"and"           { printf("TOKEN: and, lex: '%s'\n", yytext); return AND; }
-"or"            { printf("TOKEN: or, lex: '%s'\n", yytext); return OR; }
-"not"           { printf("TOKEN: not, lex: '%s'\n", yytext); return NOT; }
+"def"           { fprintf(stderr,"TOKEN: def, lex: '%s'\n", yytext); return DEF; }
+"return"        { fprintf(stderr,"TOKEN: return, lex: '%s'\n", yytext); return RTRN; }
+"if"            { fprintf(stderr,"TOKEN: if, lex: '%s'\n", yytext); return IF; }
+"elif"          { fprintf(stderr,"TOKEN: elif, lex: '%s'\n", yytext); return ELIF; }
+"else"          { fprintf(stderr,"TOKEN: else, lex: '%s'\n", yytext); return ELSE; }
+"while"         { fprintf(stderr,"TOKEN: while, lex: '%s'\n", yytext); return WHL; }
+"break"         { fprintf(stderr,"TOKEN: break, lex: '%s'\n", yytext); return BRK; }
+"False"         { fprintf(stderr,"TOKEN: False, lex: '%s'\n", yytext); return FLS; }
+"True"          { fprintf(stderr,"TOKEN: True, lex: '%s'\n", yytext); return TRUE; }
+"None"          { fprintf(stderr,"TOKEN: None, lex: '%s'\n", yytext); return NONE; }
+"is"            { fprintf(stderr,"TOKEN: is, lex: '%s'\n", yytext); return IS; }
+"and"           { fprintf(stderr,"TOKEN: and, lex: '%s'\n", yytext); return AND; }
+"or"            { fprintf(stderr,"TOKEN: or, lex: '%s'\n", yytext); return OR; }
+"not"           { fprintf(stderr,"TOKEN: not, lex: '%s'\n", yytext); return NOT; }
 
 [_a-zA-Z][_0-9a-zA-Z]* { yylval.stringValue = strdup(yytext); return NAME; }
 
@@ -131,27 +131,27 @@ static int count_indent(const char *s) {
                     return STR; 
                 }
 
-[+-]?(0\.[0-9]+|[1-9][0-9]*\.[0-9]+) { printf("TOKEN: FLOAT, lex: '%s'\n", yytext); yylval.floatValue = atof(yytext); return FLOAT; }
-[+-]?(0|[1-9][0-9]*)               { printf("TOKEN: INT, lex: '%s'\n", yytext); yylval.intValue = atoi(yytext); return INT; }
+[+-]?(0\.[0-9]+|[1-9][0-9]*\.[0-9]+) { fprintf(stderr,"TOKEN: FLOAT, lex: '%s'\n", yytext); yylval.floatValue = atof(yytext); return FLOAT; }
+[+-]?(0|[1-9][0-9]*)               { fprintf(stderr,"TOKEN: INT, lex: '%s'\n", yytext); yylval.intValue = atoi(yytext); return INT; }
 
-"+"             { printf("TOKEN: PLUS, lex: '%s'\n", yytext); return PLUS; }
-"-"             { printf("TOKEN: MINUS, lex: '%s'\n", yytext); return MINUS; }
-"*"             { printf("TOKEN: TIMES, lex: '%s'\n", yytext); return TIMES; }
-"/"             { printf("TOKEN: DIVIDE, lex: '%s'\n", yytext); return DIVIDE; }
-"("             { printf("TOKEN: LPAREN, lex: '%s'\n", yytext); return LPAREN; }
-")"             { printf("TOKEN: RPAREN, lex: '%s'\n", yytext); return RPAREN; }
-"{"             { printf("TOKEN: LCBRACKET, lex: '%s'\n", yytext); return LCBRACKET; }
-"}"             { printf("TOKEN: RCBRACKET, lex: '%s'\n", yytext); return RCBRACKET; }
-"["             { printf("TOKEN: LSBRACKET, lex: '%s'\n", yytext); return LSBRACKET; }
-"]"             { printf("TOKEN: RSBRACKET, lex: '%s'\n", yytext); return RSBRACKET; }
-":"             { printf("TOKEN: COLON, lex: '%s'\n", yytext); return COLON; }
-","             { printf("TOKEN: COMA, lex: '%s'\n", yytext); return COMA; }
-">"             { printf("TOKEN: GT, lex: '%s'\n", yytext);  return GT; }
-"<"             { printf("TOKEN: LT, lex: '%s'\n", yytext); return LT; }
-"=="            { printf("TOKEN: EQ, lex: '%s'\n", yytext); return EQ; }
-"!="            { printf("TOKEN: NEQ, lex: '%s'\n", yytext); return NEQ; }
-">="            { printf("TOKEN: GE, lex: '%s'\n", yytext); return GE; }
-"<="            { printf("TOKEN: LE, lex: '%s'\n", yytext); return LE; }
+"+"             { fprintf(stderr,"TOKEN: PLUS, lex: '%s'\n", yytext); return PLUS; }
+"-"             { fprintf(stderr,"TOKEN: MINUS, lex: '%s'\n", yytext); return MINUS; }
+"*"             { fprintf(stderr,"TOKEN: TIMES, lex: '%s'\n", yytext); return TIMES; }
+"/"             { fprintf(stderr,"TOKEN: DIVIDE, lex: '%s'\n", yytext); return DIVIDE; }
+"("             { fprintf(stderr,"TOKEN: LPAREN, lex: '%s'\n", yytext); return LPAREN; }
+")"             { fprintf(stderr,"TOKEN: RPAREN, lex: '%s'\n", yytext); return RPAREN; }
+"{"             { fprintf(stderr,"TOKEN: LCBRACKET, lex: '%s'\n", yytext); return LCBRACKET; }
+"}"             { fprintf(stderr,"TOKEN: RCBRACKET, lex: '%s'\n", yytext); return RCBRACKET; }
+"["             { fprintf(stderr,"TOKEN: LSBRACKET, lex: '%s'\n", yytext); return LSBRACKET; }
+"]"             { fprintf(stderr,"TOKEN: RSBRACKET, lex: '%s'\n", yytext); return RSBRACKET; }
+":"             { fprintf(stderr,"TOKEN: COLON, lex: '%s'\n", yytext); return COLON; }
+","             { fprintf(stderr,"TOKEN: COMA, lex: '%s'\n", yytext); return COMA; }
+">"             { fprintf(stderr,"TOKEN: GT, lex: '%s'\n", yytext);  return GT; }
+"<"             { fprintf(stderr,"TOKEN: LT, lex: '%s'\n", yytext); return LT; }
+"=="            { fprintf(stderr,"TOKEN: EQ, lex: '%s'\n", yytext); return EQ; }
+"!="            { fprintf(stderr,"TOKEN: NEQ, lex: '%s'\n", yytext); return NEQ; }
+">="            { fprintf(stderr,"TOKEN: GE, lex: '%s'\n", yytext); return GE; }
+"<="            { fprintf(stderr,"TOKEN: LE, lex: '%s'\n", yytext); return LE; }
 
 [ \t]+          { /* Ignora espaços no meio da linha */ }
 
@@ -162,7 +162,7 @@ static int count_indent(const char *s) {
     }
     eof_processed = 1;
 
-    printf("TOKEN: EOF, lex: ''\n");
+    fprintf(stderr,"TOKEN: EOF, lex: ''\n");
 
     while (indent_top > 1) {
         indent_top--;
@@ -170,7 +170,7 @@ static int count_indent(const char *s) {
     }
 
     push_token(NEWLINE); 
-    printf("TOKEN: NEWLINE (empilhado no EOF)\n");
+    fprintf(stderr,"TOKEN: NEWLINE (empilhado no EOF)\n");
 
     int t = pop_token();
     return t ? t : 0;
