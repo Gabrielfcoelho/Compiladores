@@ -1,0 +1,19 @@
+# Arquivos gerados pela compilação
+compilador
+lex.yy.c
+parser_keywords.tab.c
+parser_keywords.tab.h
+
+# Arquivos gerados pelo Bison/Flex (padrão geral)
+*.tab.c
+*.tab.h
+lex.yy.*
+
+# Executáveis
+*.exe
+*.out
+
+# Arquivos temporários
+*.tmp
+*.swp
+*~
