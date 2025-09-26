@@ -1,175 +1,135 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+void scanner_init(void);
 
 int yylex(void);
 void yyerror(const char *s);
-extern int yylineno; // Para reportar o número da linha no erro
-extern char *yytext; // Para reportar o texto do token no erro
+extern int yylineno;
+extern char *yytext;
 %}
 
-/* SEÇÃO 1: DECLARAÇÕES DE VALORES SEMÂNTICOS (UNION) */
 %union {
-    int ival;
     int intValue;
     float floatValue;
     char *stringValue;
 }
 
-/* SEÇÃO 2: DECLARAÇÃO DE TOKENS */
-// Tokens de Palavras-Chave
-%token DEF RTRN IF ELIF ELSE WHL BRK FLS TRUE NONE IS AND OR NOT 
-
-// Tokens de Expressões e Literais
-%token <ival> NUM
+/* DECLARAÇÃO DE TOKENS */
+%token DEF RTRN IF ELIF ELSE WHL BRK FLS TRUE NONE IS AND OR NOT
 %token <intValue> INT
 %token <floatValue> FLOAT
-%token <stringValue> STR
-%token NAME
+%token <stringValue> STR NAME
 %token PLUS MINUS TIMES DIVIDE LPAREN RPAREN
-
-// Tokens de Delimitadores
 %token RCBRACKET LCBRACKET RSBRACKET LSBRACKET COLON COMA
-
-// Tokens de Estrutura e Indentação
+%token GT LT EQ NEQ GE LE
 %token INDENT DEDENT NEWLINE
 
-/* SEÇÃO 3: DECLARAÇÃO DE PRECEDÊNCIA */
-%type <ival> expressao
-
+/* PRECEDÊNCIA E ASSOCIAÇÃO DE OPERADORES */
 %left PLUS MINUS
 %left TIMES DIVIDE
+%left GT LT EQ NEQ GE LE
 
-// A regra inicial da gramática
-%start programa
+/* TIPOS PARA NÃO-TERMINAIS QUE RETORNAM VALORES */
+%type <intValue> expression
 
-%%
-
-/* SEÇÃO 4: REGRAS DA GRAMÁTICA */
-
-// A regra 'programa' é o ponto de entrada. Um programa é uma sequência de declarações.
-programa:
-    /* um programa pode começar vazio */
-  | programa declaracao
-  | programa identificadores
-  ;
-
-// 'declaracao' pode ser uma declaração simples ou composta.
-declaracao:
-    declaracao_simples NEWLINE
-  | declaracao_composta 
-  ;
-
-// Declarações compostas são aquelas que contêm outras declarações (ex: if, while).
-declaracao_composta:
-    decl_if
-  | decl_while
-  | funcao
-  | decl_else
-  | decl_elif
-  ;
-
-// Declarações simples são aquelas que não contêm outras (ex: return, break).
-declaracao_simples:
-    expressao
-  | decl_rtrn
-  | decl_brk
-  | decl_and
-  | decl_or
-  | decl_not
-  | decl_fls
-  | decl_true
-  | decl_none
-  ;
-
-// Identificadores
-identificadores:
-    NAME { printf("Nome válido\n"); }
-  | expressao
-  ;
-
-// REGRA CHAVE: Define o que é um bloco de código indentado.
-bloco:
-    NEWLINE INDENT declaracoes DEDENT
-  ;
-
-// Um bloco contém uma ou mais declarações.
-declaracoes:
-    declaracao
-  | declaracoes declaracao
-  ;
-
-// Regras para declarações específicas (palavras-chave)
-decl_if: 
-    IF expressao COLON bloco { printf(">> Gramática: Reconheci um IF com bloco.\n"); }
-  | IF { printf("recebi um if\n"); }
-
-decl_while: 
-    WHL expressao COLON bloco { printf(">> Gramática: Reconheci um WHILE com bloco.\n"); }
-  | WHL { printf("recebi um while\n"); }
-
-funcao: 
-    DEF COLON bloco { printf(">> Gramática: Reconheci uma função DEF com bloco.\n"); }
-  | DEF { printf("recebi um def\n"); }
-
-decl_else: ELSE { printf("recebi um else\n"); }
-decl_elif: ELIF { printf("recebi um elif\n"); }
-
-decl_rtrn: 
-    RTRN expressao { printf(">> Gramática: Reconheci um RETURN.\n"); }
-  | RTRN { printf("recebi um return\n"); }
-
-decl_brk: 
-    BRK { printf(">> Gramática: Reconheci um BREAK.\n"); }
-
-decl_and: AND { printf("recebi um and\n"); }
-decl_or: OR { printf("recebi um or\n"); }
-decl_not: NOT { printf("recebi um not\n"); }
-decl_fls: FLS { printf("recebi um False\n"); }
-decl_true: TRUE { printf("recebi um True\n"); }
-decl_none: NONE { printf("recebi um None\n"); }
-
-// Regra para expressões (unificada de todos os parsers)
-expressao:
-    expressao PLUS expressao    { $$ = $1 + $3; }
-  | expressao MINUS expressao   { $$ = $1 - $3; }
-  | expressao TIMES expressao   { $$ = $1 * $3; }
-  | expressao DIVIDE expressao  {
-        if ($3 == 0) {
-            fprintf(stderr, "Erro: divisão por zero na linha %d\n", yylineno);
-            $$ = 0;
-        } else {
-            $$ = $1 / $3;
-        }
-    }
-  | LPAREN expressao RPAREN     { $$ = $2; }
-  | LCBRACKET expressao RCBRACKET
-  | LSBRACKET expressao RSBRACKET
-  | COMA expressao
-  | COLON
-  | expressao STR               { printf("String lida: %s\n", $2); } 
-  | expressao FLOAT             { printf("FLOAT lido: %f\n", $2); }
-  | expressao INT               { printf("Inteiro lido: %d\n", $2); }
-  | STR                         { printf("String lida: %s\n", $1); } 
-  | FLOAT                       { printf("FLOAT lido: %f\n", $1); }
-  | INT                         { printf("Inteiro lido: %d\n", $1); }
-  | NUM                         { $$ = $1; printf("Numero lido\n"); }
-  ;
+%start program
 
 %%
 
-/*
- * SEÇÃO 5: CÓDIGO AUXILIAR C
- */
+/* REGRAS DA GRAMÁTICA */
 
-// Função chamada pelo Bison quando um erro de sintaxe é encontrado.
+program:
+    /* Um programa pode ser vazio ou uma lista de statements */
+    | statement_list
+    ;
+
+statement_list:
+    statement
+    | statement_list statement
+    ;
+
+statement:
+    simple_statement NEWLINE
+    | compound_statement
+    ;
+
+/* Statements que não quebram o fluxo normal (terminam com NEWLINE) */
+simple_statement:
+    expression                { printf(">> Gramática: Avaliou uma expressão.\n"); }
+    | RTRN expression           { printf(">> Gramática: Reconheci um RETURN com expressão.\n"); }
+    | RTRN                      { printf(">> Gramática: Reconheci um RETURN vazio.\n"); }
+    | BRK                       { printf(">> Gramática: Reconheci um BREAK.\n"); }
+    | NAME                      { printf(">> Gramática: Uso de variável/identificador '%s'.\n", $1); free($1); }
+    ;
+
+/* Statements que contêm seus próprios blocos (if, while, def) */
+compound_statement:
+    if_statement
+    | while_statement
+    | function_definition
+    ;
+
+/* Bloco de código indentado */
+suite:
+    NEWLINE INDENT statement_list DEDENT
+    ;
+
+/* Estrutura IF-ELIF-ELSE para remover a ambiguidade "dangling else" */
+if_statement:
+    IF expression COLON suite                                       { printf(">> Gramática: Bloco IF.\n"); }
+    | IF expression COLON suite ELSE COLON suite                    { printf(">> Gramática: Bloco IF-ELSE.\n"); }
+    | IF expression COLON suite elif_clauses                        { printf(">> Gramática: Bloco IF com ELIFs.\n"); }
+    | IF expression COLON suite elif_clauses ELSE COLON suite       { printf(">> Gramática: Bloco IF com ELIFs e ELSE.\n"); }
+    ;
+
+elif_clauses:
+    ELIF expression COLON suite
+    | elif_clauses ELIF expression COLON suite
+    ;
+
+while_statement:
+    WHL expression COLON suite { printf(">> Gramática: Bloco WHILE.\n"); }
+    ;
+
+function_definition:
+    DEF NAME LPAREN RPAREN COLON suite { printf(">> Gramática: Definição de função '%s'.\n", $2); free($2); }
+    ;
+
+
+/* Regras para expressões aritméticas e literais */
+expression:
+    expression PLUS expression     { $$ = $1 + $3; }
+    | expression MINUS expression    { $$ = $1 - $3; }
+    | expression TIMES expression    { $$ = $1 * $3; }
+    | expression DIVIDE expression   { if($3 != 0) $$ = $1 / $3; else { yyerror("Divisão por zero"); YYERROR; } }
+        /* REGRAS DE COMPARAÇÃO ADICIONADAS */
+    | expression GT expression       { $$ = $1 > $3; }
+    | expression LT expression       { $$ = $1 < $3; }
+    | expression EQ expression       { $$ = $1 == $3; }
+    | expression NEQ expression      { $$ = $1 != $3; }
+    | expression GE expression       { $$ = $1 >= $3; }
+    | expression LE expression       { $$ = $1 <= $3; }
+
+    | LPAREN expression RPAREN       { $$ = $2; }
+    | INT                            { $$ = $1; }
+    | FLOAT                          {/* Ação pendente: union precisa de um campo para float */}
+    | STR                            {/* Ação pendente: union precisa de um campo para string */}
+    | TRUE                           { $$ = 1; }
+    | FLS                            { $$ = 0; }
+    ;
+
+%%
+
+/* CÓDIGO AUXILIAR */
 void yyerror(const char *s) {
-    fprintf(stderr, "Erro sintático na linha %d próximo a '%s': %s\n",
-            yylineno, yytext ? yytext : "EOF", s);
+    fprintf(stderr, "Erro sintático na linha %d próximo a '%s': %s\n", yylineno, yytext, s);
 }
 
-// Função principal que inicia a análise.
 int main(void) {
-    // yyparse() chama yylex() para obter os tokens e aplicar as regras da gramática.
+    /* Inicializa o scanner (importante para a lógica de indentação) */
+    scanner_init(); 
     return yyparse();
 }
