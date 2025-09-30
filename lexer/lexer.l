@@ -152,6 +152,8 @@ static int count_indent(const char *s) {
 "!="            { fprintf(stderr,"TOKEN: NEQ, lex: '%s'\n", yytext); return NEQ; }
 ">="            { fprintf(stderr,"TOKEN: GE, lex: '%s'\n", yytext); return GE; }
 "<="            { fprintf(stderr,"TOKEN: LE, lex: '%s'\n", yytext); return LE; }
+"="             { fprintf(stderr,"TOKEN: ASSIGN, lex: '%s'\n", yytext); return ASSIGN; }
+
 
 [ \t]+          { /* Ignora espaços no meio da linha */ }
 
