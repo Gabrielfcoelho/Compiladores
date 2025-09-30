@@ -24,6 +24,7 @@ nav:
 
   - Ponto de Controle 1:
       - Introdução: sprint1/index.md
+      - Cronograma: Cronograma/Cronograma.md
       - Especificação da Linguagem: sprint1/especificacao_linguagem.md
       - Escopo do Projeto: sprint1/escopo.md
       - Análise Léxica: sprint1/analise_lexica.md
