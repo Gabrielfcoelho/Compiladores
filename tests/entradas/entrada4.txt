@@ -1,0 +1,6 @@
+def test_nested_if():
+    if 15 > 0:
+        if 15 > 10:
+            return 1
+        else:
+            return 2
