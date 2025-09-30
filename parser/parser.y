@@ -29,9 +29,14 @@ extern char *yytext;
 %token INDENT DEDENT NEWLINE
 
 /* PRECEDÊNCIA E ASSOCIAÇÃO DE OPERADORES */
+%left OR
+%left AND
+%left NOT
+%left IS
+%left EQ NEQ
+%left GT LT GE LE
 %left PLUS MINUS
 %left TIMES DIVIDE
-%left GT LT EQ NEQ GE LE
 
 /* TIPOS PARA NÃO-TERMINAIS QUE RETORNAM VALORES */
 %type <intValue> expression
@@ -50,7 +55,6 @@ program:
 statement_list:
     statement
     | statement_list statement
-    | statement_list NEWLINE 
     ;
 
 statement:
@@ -76,7 +80,8 @@ compound_statement:
 
 /* Bloco de código indentado */
 suite:
-    NEWLINE INDENT statement_list DEDENT
+    NEWLINE INDENT statement_list DEDENT  { printf(">> Gramática: Suite processada.\n"); }
+    | simple_statement NEWLINE             { printf(">> Gramática: Suite simples.\n"); }
     ;
 
 /* Estrutura IF-ELIF-ELSE para remover a ambiguidade "dangling else" */
