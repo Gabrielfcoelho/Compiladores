@@ -62,15 +62,14 @@ static int count_indent(const char *s) {
 %}
 (\r\n|\n|\r)+            { fprintf(stderr,"TOKEN: NEWLINE\n"); BEGIN(INDENT_CHECK); return NEWLINE; }
 
-<INDENT_CHECK>[ \t]* {
-    if (yytext[yyleng-1] == '\n' || *yytext == '#') {
-        yyless(0); 
-        BEGIN(INITIAL);
-        return NEWLINE;
-    }
-
+<INDENT_CHECK>[ \t]*[^ \t\n#] {
+    /* Calcula a indentação antes de fazer yyless */
     int current_indent = count_indent(yytext);
-    int previous_indent = indent_stack[indent_top - 1];
+    /* Volta um caractere para não consumir o conteúdo da linha */
+    yyless(yyleng - 1);
+    
+    /* CORREÇÃO: Verifica se a pilha tem elementos antes de acessar */
+    int previous_indent = (indent_top > 0) ? indent_stack[indent_top - 1] : 0;
 
     if (current_indent > previous_indent) {
         if (indent_top >= INDENT_MAX) {
@@ -78,25 +77,34 @@ static int count_indent(const char *s) {
             exit(1);
         }
         indent_stack[indent_top++] = current_indent;
-        push_token(INDENT);
-    } else {
-        while (current_indent < indent_stack[indent_top - 1]) {
+        BEGIN(INITIAL);
+        fprintf(stderr,"TOKEN: INDENT (empilhado)\n");
+        return INDENT;
+    } else if (current_indent < previous_indent) {
+        while (indent_top > 0 && current_indent < indent_stack[indent_top - 1]) {
             indent_top--;
             push_token(DEDENT);
         }
-        if (current_indent != indent_stack[indent_top - 1]) {
+        if (indent_top > 0 && current_indent != indent_stack[indent_top - 1]) {
             fprintf(stderr, "Erro de Indentação na linha %d: nível inconsistente.\n", yylineno);
             exit(1);
         }
     }
     
-    yyless(strlen(yytext));
     BEGIN(INITIAL);
-    
     int t = pop_token();
     if (t) return t;
-    
-    return NEWLINE;
+}
+
+<INDENT_CHECK>[ \t]*\n {
+    /* Linha vazia - ignora e continua no estado INDENT_CHECK */
+    BEGIN(INDENT_CHECK);
+}
+
+<INDENT_CHECK>[ \t]*# {
+    /* Comentário - ignora o resto da linha */
+    BEGIN(INITIAL);
+    yyless(0);
 }
 
 <INDENT_CHECK><<EOF>> {
@@ -152,6 +160,8 @@ static int count_indent(const char *s) {
 "!="            { fprintf(stderr,"TOKEN: NEQ, lex: '%s'\n", yytext); return NEQ; }
 ">="            { fprintf(stderr,"TOKEN: GE, lex: '%s'\n", yytext); return GE; }
 "<="            { fprintf(stderr,"TOKEN: LE, lex: '%s'\n", yytext); return LE; }
+"="             { fprintf(stderr,"TOKEN: ASSIGN, lex: '%s'\n", yytext); return ASSIGN; }
+
 
 [ \t]+          { /* Ignora espaços no meio da linha */ }
 
@@ -184,5 +194,6 @@ void scanner_init(void) {
     indent_top = 1;
     indent_stack[0] = 0;
     pending_top = 0;
-    //BEGIN(INDENT_CHECK);
+    eof_processed = 0;
+    BEGIN(INITIAL);
 }

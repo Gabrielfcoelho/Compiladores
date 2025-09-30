@@ -1,4 +1,5 @@
 # Arquivos gerados pela compilação
+compiler
 compilador
 lex.yy.c
 parser_keywords.tab.c
