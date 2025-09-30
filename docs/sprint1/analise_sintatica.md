@@ -1,7 +1,7 @@
 # Análise Sintática
 
 ## Objetivo
-Descrever o funcionamento do analisador sintático (parser) do compilador, incluindo a gramática utilizada, exemplos de derivação e tratamento de erros sintáticos.
+Descrever o funcionamento do analisador sintático (parser) do compilador, incluindo a gramática utilizada e tratamento de erros sintáticos.
 
 ---
 
@@ -28,53 +28,6 @@ expression   ::= expression PLUS expression
                | expression DIVIDE expression
                | LPAREN expression RPAREN
                | INT | FLOAT | STR
-```
-
----
-
-## Exemplos de Derivação
-
-### Exemplo 1: Condicional Simples
-#### Entrada
-```python
-if x > 0:
-    y = y + 1
-```
-
-#### Derivação
-```
-program
-  └── statement_list
-      └── statement
-          └── if_statement
-              └── expression
-              └── suite
-                  └── statement_list
-                      └── statement
-                          └── simple_statement
-                              └── expression
-```
-
-### Exemplo 2: Função com Retorno
-#### Entrada
-```python
-def func():
-    return 1
-```
-
-#### Derivação
-```
-program
-  └── statement_list
-      └── statement
-          └── function_definition
-              └── IDENT
-              └── suite
-                  └── statement_list
-                      └── statement
-                          └── simple_statement
-                              └── RTRN
-                              └── expression
 ```
 
 ---
